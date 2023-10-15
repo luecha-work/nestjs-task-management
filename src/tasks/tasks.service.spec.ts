@@ -35,8 +35,39 @@ describe('TasksService', () => {
   describe('getTasks', () => {
     it('calls TasksRepository.getTasks and returns the result', async () => {
       tasksRepository.getTasks.mockResolvedValue('someValue');
-      const result = await tasksService.getTasks(null, mockUser);
+
+      const result = await tasksService.getTasks(
+        { status: TaskStatus.DONE, search: 'Hello' },
+        mockUser,
+      );
+
+      console.log(`getTasks result: ${result}`);
+
       expect(result).toEqual('someValue');
+    });
+
+    it('returns an empty array if no tasks match the criteria', async () => {
+      tasksRepository.getTasks.mockResolvedValue([]);
+
+      const result = await tasksService.getTasks(
+        { status: TaskStatus.DONE, search: 'Hello' },
+        mockUser,
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('throws an error if the call to tasksRepository.getTasks fails', async () => {
+      tasksRepository.getTasks.mockRejectedValue(
+        new Error('Something went wrong'),
+      );
+
+      expect(async () => {
+        await tasksService.getTasks(
+          { status: TaskStatus.DONE, search: 'Hello' },
+          mockUser,
+        );
+      }).rejects.toThrow('Something went wrong');
     });
   });
 

@@ -1,11 +1,11 @@
 import { User } from './../auth/entity/user.entity';
 import { Task } from './entity/task.entity';
 import { TasksRepository } from './entity/task.repository';
-import { NotFoundException } from '@nestjs/common/exceptions';
+import { HttpException, NotFoundException } from '@nestjs/common/exceptions';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatus } from './task.status.enum';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere } from 'typeorm';
@@ -18,7 +18,15 @@ export class TasksService {
   ) {}
 
   getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
-    return this.tasksRepository.getTasks(filterDto, user);
+    try {
+      return this.tasksRepository.getTasks(filterDto, user);
+    } catch (error) {
+      throw new HttpException(
+        // new Error('Cause Error'), HttpStatus.BAD_REQUEST
+        error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getTaskById(id: string, user: User): Promise<Task> {
